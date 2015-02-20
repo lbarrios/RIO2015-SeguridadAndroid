@@ -1,0 +1,36 @@
+% ------ headers globales -------------
+\documentclass[11pt, a4paper, twoside]{article}
+\usepackage{header}
+\usepackage{config}
+% -------------------------------------
+\begin{document}
+
+%-- Carátula --
+\clearpage{\pagestyle{empty}\input{caratula}}
+
+%-- Índice --
+\clearpage{%
+  \pagestyle{empty}\tableofcontents%
+  \vspace{3cm}%
+  \cleardoublepage%
+}
+%-- A partir de aquí, pongo el contador de páginas en 1 --
+\setcounter{page}{1}
+
+\index{Vulnerabilidades Locales}
+\section{Vulnerabilidades Locales}
+\subsection{Datos mal protegidos}
+\subsection{Componentes mal exportados}
+
+\clearpage
+\index{Vulnerabilidades de Red}
+\section{Vulnerabilidades de Red}
+\subsection{Activo}
+\subsection{Pasivo}
+
+\clearpage
+\index{Vulnerabilidades Remotas}
+\section{Vulnerabilidades Remotas}
+
+
+\end{document}
