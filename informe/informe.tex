@@ -34,9 +34,21 @@ Para analizar la aplicación en busca de esta vulnerabilidad, se desempaquetó e
 
 Se analizó luego el archivo \textbf{<<AndroidManifest.xml>>}, el cual se encuentra transcripto en \fig{AndroidManifest}. Uno de los primeros detalles a tener en cuenta, es la versión mínima de SDK para la cual fue producida la aplicación. En este caso, es posible obtener esa información a partir de la propiedad {\color{red}\textbf{platformBuildVersionCode}} del tag manifest. Esta aplicación fue hecha para la versión 16 del SDK, lo que permite deducir que cualquier componente al que no se le asignen \textbf{permisos explícitos}, o cualquier provider al que no se le asigne la propiedad \textbf{exported} en \emph{false}, es accesible públicamente\footnote{``Any application can access public components that are not explicitly assigned an access permission in their manifest definition. Android content provider are exported by default for applications that set either android:minSdkVersion or android:targetSdkVersion to "16" or lower. (\url{http://www.hpenterprisesecurity.com/vulncat/en/vulncat/java/android_bad_practices_missing_exported_flag_or_component_permission.html})}.
 
+\begin{wrapfigure}{r}{0.3\textwidth}
+%\vspace{-20pt}
+\begin{center}
+\includegraphics[scale=0.45]{android-provider.png}
+\end{center}
+\vspace{-20pt}
+\caption{Provider}
+\label{fig:android-provider}
+\vspace{-30pt}
+\end{wrapfigure}
+
 Se encontró un provider {\color{blue}\texttt{``ar.sadosky.browser.history\_provider''}}, el cual tiene definida la propiedad \texttt{{\color{red}android:exported}={\color{blue}``true''}}, lo que significa que se exporta públicamente, y en donde la propiedad \texttt{\color{red}android:readPermission} no se encuentra definida. De esta forma, la aplicación está exponiendo \emph{datos sensibles} (el historial web del usuario), de forma pública, con \emph{permisos normales}, es decir que cualquier otra aplicación se encuentra en condiciones de leer el historial del usuario.
 
-\clearpage
+Para saber cómo una aplicación maliciosa podría aprovechar esta vulnerabilidad, es necesario entender cómo está definido el \emph{provider} dentro de la aplicación que se quiere vulnerar. Para ello, es útil primero entender qué es lo que viene a representar un \emph{content provider}, y cómo es que las aplicaciones acceden al mismo. En \fig{android-provider} se puede apreciar una representación básica de un provider en android, que no resulta ser más que una abstracción para una base de datos. 
+
 
 \begin{figure}[H]
 \lstinputlisting[language=XML_android]{AndroidManifest.xml}
@@ -44,8 +56,8 @@ Se encontró un provider {\color{blue}\texttt{``ar.sadosky.browser.history\_prov
 \label{fig:AndroidManifest}
 \end{figure}
 
-
 \subsubsection{Prueba de Concepto}
+
 
 \subsection{Componentes mal exportados}
 
