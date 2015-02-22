@@ -22,9 +22,31 @@
 %
 \index{Vulnerabilidades Locales}
 \section{Vulnerabilidades Locales}
+%
+%-- Subsección: Vulnerabilidades locales: Datos mal protegidos
+%
 \subsection{Datos mal protegidos}
+
+\subsubsection{Descripción de la vulnerabilidad}
+Cuando uno hace un register o un login, esto se guarda en el log de la aplicación. Esto representa una vulnerabilidad relativamente grave. Si bien a partir de la \textbf{versión 16 de la API de Android} las aplicaciones ya no tienen permisos globales para leer los logs, una aplicación que logre obtener acceso root de alguna forma (por ejemplo, a través de un exploit al kernel) tendría acceso a la claves del usuario. También se corre el mismo peligro ante una situación de, por ejemplo, robo del celular, ya que los logs pueden ser leídos fácilmente a través de \texttt{ADB}.
+
+\subsubsection{Prueba de Concepto}
+A continuación se muestra un pequeño ejemplo de cómo es posible, a través del comando \texttt{logcat} de ADB, extraer los logs con las claves de los usuarios de la aplicación.
+
+\begin{Verbatim}[frame=single]
+$ adb logcat -s "browser"
+D/browser ( 1562): url is badbrowser://login?
+D/browser ( 1562): login?
+D/browser ( 1562): saving credentials: Username: test@test.com password 12345
+D/browser ( 1562): starting sync receiver
+\end{Verbatim}
+
+%
+%-- Subsección: Vulnerabilidades locales: Componentes mal exportados
+%
+\clearpage
 \subsection{Componentes mal exportados}
-\subsubsection{Descripción}
+\subsubsection{Descripción de la vulnerabilidad}
 A partir de esta vulnerabilidad, una aplicación maliciosa podría 
 acceder a los datos sensibles del usuario. 
 
@@ -101,6 +123,9 @@ El hecho de que el historial sea accesible por cualquier aplicación, representa
 \clearpage
 \index{Vulnerabilidades de Red}
 \section{Vulnerabilidades de Red}
+%
+%---- Subsección: Vulnerabilidades de Red: Pasivo
+%
 \subsection{Pasivo}
 \subsubsection{Descripción}
 El tráfico de la aplicación BadBrowser es enviado a través del protocolo HTTP. Esto significa que el mismo puede ser interceptado por un analizador de protocolos/tráfico de red. 
@@ -188,6 +213,10 @@ email=test2%40test.com&password=wmw%2Ba1kdbW5UIt3Dg1fesg%3D%3D%0A&uuid=000000000
 \label{fig:sniffer-login}
 \end{figure}
 
+%
+%---- Subsección: Vulnerabilidades de Red: Activo
+%
+\clearpage
 \subsection{Activo}
 
 %
@@ -197,5 +226,8 @@ email=test2%40test.com&password=wmw%2Ba1kdbW5UIt3Dg1fesg%3D%3D%0A&uuid=000000000
 \index{Vulnerabilidades Remotas}
 \section{Vulnerabilidades Remotas}
 
+% El servidor no guarda el email del usuario
+% El servidor acepta cualquier usuario y clave como válidas
+% La clave del usuario se encuentra en el servidor.
 
 \end{document}
