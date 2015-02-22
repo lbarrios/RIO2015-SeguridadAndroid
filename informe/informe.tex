@@ -49,15 +49,29 @@ Se encontró un provider {\color{blue}\texttt{``ar.sadosky.browser.history\_prov
 
 Para saber cómo una aplicación maliciosa podría aprovechar esta vulnerabilidad, es necesario entender cómo está definido el \emph{provider} dentro de la aplicación que se quiere vulnerar. Para ello, es útil primero entender qué es lo que viene a representar un \emph{content provider}, y cómo es que las aplicaciones acceden al mismo. En \fig{android-provider} se puede apreciar una representación básica de un provider en android, que no resulta ser más que una abstracción para una base de datos. 
 
-
 \begin{figure}[H]
 \lstinputlisting[language=XML_android]{AndroidManifest.xml}
 \caption{AndroidManifest.xml}
 \label{fig:AndroidManifest}
 \end{figure}
 
-\subsubsection{Prueba de Concepto}
+En el código del programa, cada \texttt{Content Provider} está representado por una clase que extiende a la clase \textbf{\emph{ContentProvider}}\footnote{Clase nativa del SDK de Android: \url{http://developer.android.com/reference/android/content/ContentProvider.html}}, por lo que buscando dentro de la carpeta \textbf{<<smali>>} del BadBrowser desempaquetado, podemos encontrar el archivo ``\texttt{./ar/sadosky/badbrowser/HistoryProvider.smali}'', el cual contiene información sobre el provider en cuestión. 
 
+Dado que los archivos \texttt{smali} son particularmente dificultosos de leer, otra opción es utilizar el programa \textbf{dex2jar}\footnote{Este programa sirve para transformar los binarios de Android en binarios de Java. Repositorio oficial: \url{http://code.google.com/p/dex2jar/}} para obtener un archivo \textbf{<<BadBrowser.jar>>} a partir del \texttt{apk}. Para ello, corremos el comando ``\texttt{dex2jar BadBrowser.apk}''. El binario obtenido puede ser visualizado, a su vez, con un decompilador de java, por ejemplo \textbf{jd-gui}\footnote{http://jd.benow.ca/\#jd-gui}, ejecutando ``\texttt{jd-gui BadBrowser-dex2jar.jar}''. Se realizaron estos pasos, obteniendo el código de la clase \textbf{\emph{HistoryProvider}}, como se puede apreciar en \fig{historyprovider-jdgui}. De aquí es de donde se obtuvo la URI a través de la cual el programa hace los requests, ``\texttt{\color{blue}content://ar.sadosky.browser.historyprovider/history}''.
+
+\begin{center}
+\begin{figure}[H]
+\includegraphics[scale=0.475]{historyprovider-jdgui.png}
+\caption{\texttt{HistoryProvider.class} en \textbf{JD-GUI}}
+\label{fig:historyprovider-jdgui}
+\end{figure}
+\end{center}
+
+\subsubsection{Prueba de Concepto}
+\begin{verbatim}
+$ adb shell content query --uri "content://ar.sadosky.browser.history_provider/history"
+Row: 0 url_visited=about:blank
+\end{verbatim}
 
 \subsection{Componentes mal exportados}
 
