@@ -1,12 +1,4 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% General config
-% \title{TP1 Sistemas Operativos}
-% \author{Pedro Rodriguez, Gonzalo Benegas, Leandro Ezequiel Barrios}
-% \date{\today}
-% \makeindex
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Paragraph config
 \setlength{\parindent}{1cm}
 \setlength{\parskip}{5mm plus4mm minus2mm}
@@ -14,9 +6,9 @@
 \titleformat{\section}{\LARGE\bfseries\centering}{Parte \Roman{section}}{1em}{}
 \titlespacing*{\section}{0pt}{3.25ex plus 1ex minus .2ex}{0.5em}
 \titleformat{\subsection}{\Large\bfseries}{\thesubsection}{1em}{}
-\titlespacing*{\subsection}{0pt}{3.25ex plus 1ex minus .2ex}{2em}
+\titlespacing*{\subsection}{0pt}{3.25ex plus 1ex minus .2ex}{0.25em}
 \titleformat{\subsubsection}{\large\bfseries}{\thesubsubsection}{1em}{}
-\titlespacing*{\subsubsection}{0pt}{3.25ex plus 1ex minus .2ex}{2em}
+\titlespacing*{\subsubsection}{0pt}{3.25ex plus 1ex minus .2ex}{0.125em}
 \titleformat{\paragraph}[hang]{\centering\normalsize\bfseries}{\theparagraph}{1em}{}
 \titlespacing*{\paragraph}{0pt}{5.25ex plus 1ex minus .2ex}{1em}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -51,3 +43,33 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \newcommand{\centerbf}[1]{\begin{center}\textbf{#1}\end{center}}
+
+
+\definecolor{Maroon}{rgb}{0.5,0,0}
+\definecolor{darkgreen}{rgb}{0,0.5,0}
+\definecolor{grey}{rgb}{0.5,0.5,0.5}
+\lstdefinelanguage{XML_android}
+{
+  basicstyle=\ttfamily\footnotesize,
+  morestring=[b]",
+  moredelim=[s][\color{Maroon}]{<}{\ },
+  moredelim=[s][\color{Maroon}]{</}{>},
+  moredelim=[l][\color{Maroon}]{/>},
+  moredelim=[l][\color{Maroon}]{>},
+  morecomment=[s]{<?}{?>},
+  morecomment=[s]{<!--}{-->},
+  breaklines=true, 
+  breakatwhitespace=true, 
+  numbers=left, 
+  numbersep=10pt, 
+  tabsize=2,
+  frame=L, 
+  rulecolor=\color{grey}, 
+  numberstyle=\tiny\color{grey}, 
+  commentstyle=\color{darkgreen},
+  stringstyle=\color{blue},
+  identifierstyle=\color{red},
+  keywordstyle=\color{black},
+  commentstyle=\color{darkgreen}
+}
+

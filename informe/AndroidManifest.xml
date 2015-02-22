@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="ar.sadosky.badbrowser" platformBuildVersionCode="16" platformBuildVersionName="4.1.2-1425332">
+    <permission android:name="ar.sadosky.badbrowser.permission.SyncBrowser"/>
+    <permission android:name="ar.sadosky.badbrowser.permission.WRITE" android:protectionLevel="signature"/>
+    <uses-permission android:name="android.permission.READ_PHONE_STATE"/>
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+    <application android:allowBackup="true" android:icon="@drawable/ic_launcher" android:label="@string/app_name" android:name="ar.sadosky.badbrowser.BrowserApplication" android:theme="@style/AppTheme">
+        <activity android:label="@string/app_name" android:launchMode="singleTask" android:name="ar.sadosky.badbrowser.MainActivity" android:theme="@android:style/Theme.DeviceDefault.Dialog.NoActionBar">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <data android:scheme="http"/>
+                <data android:scheme="https"/>
+                <data android:scheme="file"/>
+                <data android:scheme="javascript"/>
+                <data android:scheme="badbrowser"/>
+            </intent-filter>
+        </activity>
+        <provider android:authorities="ar.sadosky.browser.history_provider" android:exported="true" android:name="ar.sadosky.badbrowser.HistoryProvider" android:writePermission="ar.sadosky.badbrowser.permission.WRITE"/>
+        <service android:enabled="true" android:name="ar.sadosky.badbrowser.SyncService" android:permission="ar.sadosky.badbrowser.permission.SyncBrowser">
+            <intent-filter>
+                <action android:name="ar.sadosky.badbrowser.service.sync"/>
+            </intent-filter>
+        </service>
+        <activity android:label="@string/title_activity_login_activity" android:name="ar.sadosky.badbrowser.LoginActivity" android:windowSoftInputMode="stateVisible|adjustResize"/>
+        <activity android:label="@string/title_activity_register" android:name="ar.sadosky.badbrowser.RegisterActivity" android:windowSoftInputMode="stateVisible|adjustResize"/>
+        <receiver android:name="ar.sadosky.badbrowser.StartSyncReceiver"/>
+        <receiver android:name="ar.sadosky.badbrowser.DoSyncReceiver"/>
+    </application>
+</manifest>

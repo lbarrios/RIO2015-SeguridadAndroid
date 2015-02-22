@@ -17,17 +17,50 @@
 %-- A partir de aquí, pongo el contador de páginas en 1 --
 \setcounter{page}{1}
 
+%
+%-- Sección: Vulnerabilidades locales
+%
 \index{Vulnerabilidades Locales}
 \section{Vulnerabilidades Locales}
 \subsection{Datos mal protegidos}
+\subsubsection{Descripción}
+A partir de esta vulnerabilidad, una aplicación maliciosa podría 
+acceder a los datos sensibles del usuario. 
+
+Para analizar la aplicación en busca de esta vulnerabilidad, se desempaquetó el archivo \textbf{<<BadBrowser.apk>>}, utilizando para ello la herramienta \textbf{apktool}\footnote{Repositorio oficial de apktool: \url{http://code.google.com/p/android-apktool/}}, mediante el comando ``\texttt{apktool decode BadBrowser.apk}''. Esto generó un directorio BadBrowser, en donde se encontraron los siguientes archivos:
+\begin{center}
+\texttt{AndroidManifest.xml apktool.yml assets original res smali}
+\end{center}
+
+Se analizó luego el archivo \textbf{<<AndroidManifest.xml>>}, el cual se encuentra transcripto en \fig{AndroidManifest}. Uno de los primeros detalles a tener en cuenta, es la versión mínima de SDK para la cual fue producida la aplicación. En este caso, es posible obtener esa información a partir de la propiedad {\color{red}\textbf{platformBuildVersionCode}} del tag manifest. Esta aplicación fue hecha para la versión 16 del SDK, lo que permite deducir que cualquier componente al que no se le asignen \textbf{permisos explícitos}, o cualquier provider al que no se le asigne la propiedad \textbf{exported} en \emph{false}, es accesible públicamente\footnote{``Any application can access public components that are not explicitly assigned an access permission in their manifest definition. Android content provider are exported by default for applications that set either android:minSdkVersion or android:targetSdkVersion to "16" or lower. (\url{http://www.hpenterprisesecurity.com/vulncat/en/vulncat/java/android_bad_practices_missing_exported_flag_or_component_permission.html})}.
+
+Se encontró un provider {\color{blue}\texttt{``ar.sadosky.browser.history\_provider''}}, el cual tiene definida la propiedad \texttt{{\color{red}android:exported}={\color{blue}``true''}}, lo que significa que se exporta públicamente, y en donde la propiedad \texttt{\color{red}android:readPermission} no se encuentra definida. De esta forma, la aplicación está exponiendo \emph{datos sensibles} (el historial web del usuario), de forma pública, con \emph{permisos normales}, es decir que cualquier otra aplicación se encuentra en condiciones de leer el historial del usuario.
+
+\clearpage
+
+\begin{figure}[H]
+\lstinputlisting[language=XML_android]{AndroidManifest.xml}
+\caption{AndroidManifest.xml}
+\label{fig:AndroidManifest}
+\end{figure}
+
+
+\subsubsection{Prueba de Concepto}
+
 \subsection{Componentes mal exportados}
 
+%
+%-- Sección: Vulnerabilidades de Red
+%
 \clearpage
 \index{Vulnerabilidades de Red}
 \section{Vulnerabilidades de Red}
 \subsection{Activo}
 \subsection{Pasivo}
 
+%
+%-- Sección: Vulnerabilidades Remotas
+%
 \clearpage
 \index{Vulnerabilidades Remotas}
 \section{Vulnerabilidades Remotas}
