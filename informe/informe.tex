@@ -27,7 +27,7 @@
 %
 \subsection{Datos mal protegidos}
 
-\subsubsection{Descripción de la vulnerabilidad}
+\subsubsection{Descripción de la vulnerabilidad 1}
 Cuando uno hace un register o un login, esto se guarda en el log de la aplicación. Esto representa una vulnerabilidad relativamente grave. Si bien a partir de la \textbf{versión 16 de la API de Android} las aplicaciones ya no tienen permisos globales para leer los logs, una aplicación que logre obtener acceso root de alguna forma (por ejemplo, a través de un exploit al kernel) tendría acceso a la claves del usuario. También se corre el mismo peligro ante una situación de, por ejemplo, robo del celular, ya que los logs pueden ser leídos fácilmente a través de \texttt{ADB}.
 
 \subsubsection{Prueba de Concepto}
@@ -41,14 +41,18 @@ D/browser ( 1562): saving credentials: Username: test@test.com password 12345
 D/browser ( 1562): starting sync receiver
 \end{Verbatim}
 
+\subsubsection{Descripción de la vulnerabilidad 2}
+La aplicación hace uso del crifrado simetrico AES, y tiene la clave harcodeada en el código de la misma. Lo cual es trivial de encontrar haciendo uso de las herramientas explicadas más adelante para descompilar el APK.
+
+
 %
 %-- Subsección: Vulnerabilidades locales: Componentes mal exportados
 %
 \clearpage
 \subsection{Componentes mal exportados}
 \subsubsection{Descripción de la vulnerabilidad}
-A partir de esta vulnerabilidad, una aplicación maliciosa podría 
-acceder a los datos sensibles del usuario. 
+A partir de esta vulnerabilidad, una aplicación maliciosa podría
+acceder a los datos sensibles del usuario.
 
 Para analizar la aplicación en busca de esta vulnerabilidad, se desempaquetó el archivo \textbf{<<BadBrowser.apk>>}, utilizando para ello la herramienta \textbf{apktool}\footnote{Repositorio oficial de apktool: \url{http://code.google.com/p/android-apktool/}}, mediante el comando ``\texttt{apktool decode BadBrowser.apk}''. Esto generó un directorio BadBrowser, en donde se encontraron los siguientes archivos:
 \begin{center}
@@ -78,7 +82,7 @@ Para saber cómo una aplicación maliciosa podría aprovechar esta vulnerabilida
 \label{fig:AndroidManifest}
 \end{figure}
 
-En el código de la aplicación, cada \texttt{Content Provider} está representado por una clase que extiende a la clase \textbf{\emph{ContentProvider}}\footnote{Clase nativa del SDK de Android: \url{http://developer.android.com/reference/android/content/ContentProvider.html}}, por lo que buscando dentro de la carpeta \textbf{<<smali>>} del BadBrowser desempaquetado, podemos encontrar el archivo ``\texttt{./ar/sadosky/badbrowser/HistoryProvider.smali}'', el cual contiene información sobre el provider en cuestión. 
+En el código de la aplicación, cada \texttt{Content Provider} está representado por una clase que extiende a la clase \textbf{\emph{ContentProvider}}\footnote{Clase nativa del SDK de Android: \url{http://developer.android.com/reference/android/content/ContentProvider.html}}, por lo que buscando dentro de la carpeta \textbf{<<smali>>} del BadBrowser desempaquetado, podemos encontrar el archivo ``\texttt{./ar/sadosky/badbrowser/HistoryProvider.smali}'', el cual contiene información sobre el provider en cuestión.
 
 Dado que los archivos \texttt{smali} son particularmente dificultosos de leer, otra opción es utilizar el programa \textbf{dex2jar}\footnote{Este programa sirve para transformar los binarios de Android en binarios de Java. Repositorio oficial: \url{http://code.google.com/p/dex2jar/}} para obtener un archivo \textbf{<<BadBrowser.jar>>} a partir del \texttt{apk}. Para ello, corremos el comando ``\texttt{dex2jar BadBrowser.apk}''. El binario obtenido puede ser visualizado, a su vez, con un decompilador de java, por ejemplo \textbf{jd-gui}\footnote{http://jd.benow.ca/\#jd-gui}, ejecutando ``\texttt{jd-gui BadBrowser-dex2jar.jar}''. Se realizaron estos pasos, obteniendo el código de la clase \textbf{\emph{HistoryProvider}}, como se puede apreciar en \fig{historyprovider-jdgui}. De aquí es de donde se obtuvo la URI a través de la cual el programa hace los requests, ``\texttt{\color{blue}content://ar.sadosky.browser.historyprovider/history}''.
 
@@ -128,7 +132,7 @@ El hecho de que el historial sea accesible por cualquier aplicación, representa
 %
 \subsection{Pasivo}
 \subsubsection{Descripción}
-El tráfico de la aplicación BadBrowser es enviado a través del protocolo HTTP. Esto significa que el mismo puede ser interceptado por un analizador de protocolos/tráfico de red. 
+El tráfico de la aplicación BadBrowser es enviado a través del protocolo HTTP. Esto significa que el mismo puede ser interceptado por un analizador de protocolos/tráfico de red.
 
 \subsubsection{Captura de tráfico}
 Se utilizó \textbf{``Wireshark''}\footnote{\url{https://www.wireshark.org/}}, aplicando el filtro \texttt{``ip.dst==192.168.0.103 and tcp.dstport==8888''} (en donde \texttt{192.168.0.103} es la IP del servidor) para realizar un análisis dinámico que nos permitiese deducir los pormenores de la comunicación aplicación-servidor, tratando a ambos como \emph{cajas negras}. Se muestran los resultados obtenidos en \fig{wireshark-filtro}.
@@ -218,6 +222,8 @@ email=test2%40test.com&password=wmw%2Ba1kdbW5UIt3Dg1fesg%3D%3D%0A&uuid=000000000
 %
 \clearpage
 \subsection{Activo}
+Cómo la aplicación se comunica mediante HTTP un atacante que tenga control sobre la red puede impersonar al servidor de sincronizacion que utiliza la aplicación y controlar algunos detalles de la misma, como sincronizar un historial falso en el dispositivo de la victima. Existen muchas formas de lograr interceptar el tráfico, pero exceden lo que se pretende explicar en este informe.
+
 
 %
 %-- Sección: Vulnerabilidades Remotas
@@ -229,5 +235,30 @@ email=test2%40test.com&password=wmw%2Ba1kdbW5UIt3Dg1fesg%3D%3D%0A&uuid=000000000
 % El servidor no guarda el email del usuario
 % El servidor acepta cualquier usuario y clave como válidas
 % La clave del usuario se encuentra en el servidor.
+A continuación se listan distintos errores des seguridad encontrados en el server. Vale aclarar que si bien encontrar los mismos fue facil por tener el código del servidor, no es un mecanismo confiable de seguridad confiar en que nadie los encontraría por no tener el código.
+
+\begin{enumerate}
+
+\item Se utiliza un intialization vector contstante al encriptar con AES, lo cual no deberia hacerse.
+
+\item La clave de encriptación que se usa no solo es unica, sino que además es muy debil. Seria bueno utilizar un algoritmo de deribación de calves que asegure que la misma sea fuerte.
+
+\item Mal manejo de la sesiones. La información deberia guardarse en el servidor, y que el identificador de la misma sea usado simplemente para acceder a la misma. De este modo el cliente no puede modificarla por su cuenta. En el servidor que se esta analizando el identificador solo se utiliza para validar la existencia de una sesion, pero la informacion relacionada a la misma la provee el usuario.
+
+\item No es claro el objetivo de encriptar los identificadores de sesion. Estos son numeros random y la confidencialidad de los mismos no parece importar. Notar que si se roba el identificador, encriptado o no, se puede hacer un ataque de session hijacking igual. Si la intencion es que un atacante no pueda crear sus propios identificadores de sesion el algoritmo criptografico utilizado no es el indicado, sino que deberia usarse un HMAC, que probee garantias de autenticacion.
+
+\item El manejo de usuarios está mal hecho. No se registran nuevos usuarios en el metodo register, sino que siempre hay (a lo sumo) un solo usuario regitrado cuya información se pisa. A su vez, no se guarda el email del mismo, sino que se lo identifica unicamente por un uuid, el cual a su vez es constane.
+
+\item No hay sistema de autorizacion alguno. Si un usuario logra autenticarse puede acceder a la información de cualquier otro usuario.
+
+\item No es necesario saber la clave de un usuario para logearse como el mismo, solo hace falta mandar el uuid del ultimo usuario registrado (que es, para empeorar la situacion, siempre 0).
+
+\item La comparacion de claves y uuids en la funcion check\_user es susceptible a un timing attack. Deberian usarse comparaciones de tiempo constante. Notar que $==$ de python no lo es.
+
+\item El servidor no tiene protección alguna contra ataques de fuerza bruta para adivinar la clave de un usuario.
+
+\item No hay protección contra XRSF, por lo que probablemente puede hacerse que un usuario sincronice un historial falso al visitar un sitio controlado por el atacante.
+
+\end{enumerate}
 
 \end{document}
