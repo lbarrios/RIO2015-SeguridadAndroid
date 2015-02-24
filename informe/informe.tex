@@ -222,8 +222,9 @@ email=test2%40test.com&password=wmw%2Ba1kdbW5UIt3Dg1fesg%3D%3D%0A&uuid=000000000
 %
 \clearpage
 \subsection{Activo}
-Cómo la aplicación se comunica mediante HTTP un atacante que tenga control sobre la red puede impersonar al servidor de sincronizacion que utiliza la aplicación y controlar algunos detalles de la misma, como sincronizar un historial falso en el dispositivo de la victima. Existen muchas formas de lograr interceptar el tráfico, pero exceden lo que se pretende explicar en este informe.
+Como la aplicación se comunica mediante \texttt{HTTP}, un atacante que tenga control sobre la red puede impersonar al servidor de sincronización que utiliza la aplicación y controlar algunos detalles de la misma, como por ejemplo sincronizar un historial falso en el dispositivo de la víctima. Existen muchas formas de lograr interceptar el tráfico, pero exceden lo que se pretende explicar en este informe. En todo caso, el hecho de que se pueda impersonar el servidor es una gran vulnerabilidad, ya que abre la puerta a muchas más formas de atacar al usuario, por ejemplo, en el caso de que se pueda sincronizar un historial malicioso que al seleccionarlo en el autocompletado ejecute código javascript, o reemplazando las páginas HTTPS por versiones HTTP, de forma de poder interceptar las comunicaciones a los sitios que el usuario visita, o directamente modificando la URL de ciertos sitios por versiones falsas (ataques de phishing \footnote{\url{http://es.wikipedia.org/wiki/Phishing}}). 
 
+La posible gama de ataques que abre la posibilidad de poder sincronizar un historial falso es ilimitada; se puede pensar incluso en la situación en que se desee inculpar a un empleado\footnote{O a un alumno, un docente, un político, etc.}, aduciendo que el mismo realiza actividades ilegales o ilícitas durante su horario de actividad, presentando como prueba el historial de su celular.
 
 %
 %-- Sección: Vulnerabilidades Remotas
@@ -235,29 +236,31 @@ Cómo la aplicación se comunica mediante HTTP un atacante que tenga control sob
 % El servidor no guarda el email del usuario
 % El servidor acepta cualquier usuario y clave como válidas
 % La clave del usuario se encuentra en el servidor.
-A continuación se listan distintos errores des seguridad encontrados en el server. Vale aclarar que si bien encontrar los mismos fue facil por tener el código del servidor, no es un mecanismo confiable de seguridad confiar en que nadie los encontraría por no tener el código.
+A continuación se listan distintos errores de seguridad encontrados en el servidor. Vale aclarar que si bien encontrar los mismos fue fácil por tener el código del servidor, no es un mecanismo confiable de seguridad confiar en que ``en la práctica nadie los encontraría por no tener el código''.
 
 \begin{enumerate}
 
-\item Se utiliza un intialization vector contstante al encriptar con AES, lo cual no deberia hacerse.
+\item Los datos de los usuarios son guardados en el servidor en archivos de texto plano. La contraseña se encuentra encriptada, pero la clave de encriptación se puede averiguar descompilando la aplicación. Todo esto deriva en que ante un eventual ataque al servidor, los datos de los usuarios pueden ser robados.
 
-\item La clave de encriptación que se usa no solo es unica, sino que además es muy debil. Seria bueno utilizar un algoritmo de deribación de calves que asegure que la misma sea fuerte.
+\item Se utiliza un \texttt{Initialization Vector}\footnote{\url{http://en.wikipedia.org/wiki/Initialization_vector}} constante al encriptar con AES, lo cual no debería hacerse.
 
-\item Mal manejo de la sesiones. La información deberia guardarse en el servidor, y que el identificador de la misma sea usado simplemente para acceder a la misma. De este modo el cliente no puede modificarla por su cuenta. En el servidor que se esta analizando el identificador solo se utiliza para validar la existencia de una sesion, pero la informacion relacionada a la misma la provee el usuario.
+\item La \texttt{clave de encriptación} que se usa no sólo es unica, sino que además es muy débil. Sería bueno utilizar un \texttt{algoritmo de derivación de claves} que asegure que la misma sea fuerte.
 
-\item No es claro el objetivo de encriptar los identificadores de sesion. Estos son numeros random y la confidencialidad de los mismos no parece importar. Notar que si se roba el identificador, encriptado o no, se puede hacer un ataque de session hijacking igual. Si la intencion es que un atacante no pueda crear sus propios identificadores de sesion el algoritmo criptografico utilizado no es el indicado, sino que deberia usarse un HMAC, que probee garantias de autenticacion.
+\item \textbf{Mal manejo de la sesiones.} La información deberia guardarse en el servidor, y que el identificador de la misma sea usado simplemente para accederla. De este modo el cliente no puede modificarla por su cuenta. En el servidor provisto, el identificador sólo se utiliza para validar la existencia de una sesión, pero la información relacionada a la misma es provista por el usuario.
 
-\item El manejo de usuarios está mal hecho. No se registran nuevos usuarios en el metodo register, sino que siempre hay (a lo sumo) un solo usuario regitrado cuya información se pisa. A su vez, no se guarda el email del mismo, sino que se lo identifica unicamente por un uuid, el cual a su vez es constane.
+\item No es claro el objetivo de encriptar los identificadores de sesión. Estos son numeros pseudo-aleatorios y la confidencialidad de los mismos no parece importar realmente. Notar que si se roba el identificador, encriptado o no, se puede hacer un ataque de \textbf{session hijacking}\footnote{\url{http://en.wikipedia.org/wiki/Session_hijacking}} de cualquier modo. Si la intención es que un atacante no pueda crear sus propios identificadores de sesión, entonces el algoritmo criptográfico utilizado no es el indicado, sino que deberia usarse un \texttt{HMAC}, que provee garantías de autenticacion.
 
-\item No hay sistema de autorizacion alguno. Si un usuario logra autenticarse puede acceder a la información de cualquier otro usuario.
+\item \textbf{El manejo de usuarios se realiza de forma incorrecta}. No se registran nuevos usuarios en el método register, sino que siempre hay (a lo sumo) un solo usuario regitrado cuya información se pisa. A su vez, no se guarda el email del mismo, sino que se lo identifica únicamente por un \texttt{UUID}, el cual a su vez es constante.
 
-\item No es necesario saber la clave de un usuario para logearse como el mismo, solo hace falta mandar el uuid del ultimo usuario registrado (que es, para empeorar la situacion, siempre 0).
+\item \textbf{No hay sistema de autorización alguno}. Si un usuario logra autenticarse, entonces puede acceder a la información de cualquier otro usuario.
 
-\item La comparacion de claves y uuids en la funcion check\_user es susceptible a un timing attack. Deberian usarse comparaciones de tiempo constante. Notar que $==$ de python no lo es.
+\item No es necesario saber la clave de un usuario para autenticarse como el mismo, sino que sólo hace falta mandar el \texttt{UUID} del ultimo usuario registrado (que es, para empeorar la situacion, siempre 0).
 
-\item El servidor no tiene protección alguna contra ataques de fuerza bruta para adivinar la clave de un usuario.
+\item La comparacion de claves y \texttt{UUIDs} en la funcion \texttt{check\_user} es susceptible a un \textbf{timing attack}\footnote{\url{http://en.wikipedia.org/wiki/Timing_attack}}. Deberían usarse comparaciones de tiempo constante. Notar que $==$ de python no lo es.
 
-\item No hay protección contra XRSF, por lo que probablemente puede hacerse que un usuario sincronice un historial falso al visitar un sitio controlado por el atacante.
+\item El servidor no tiene protección alguna contra \textbf{ataques de fuerza bruta}\footnote{\url{http://es.wikipedia.org/wiki/Ataque_de_fuerza_bruta}}. Esto puede ser utilizado para adivinar la clave de un usuario.
+
+\item No hay protección contra \texttt{XSRF}\footnote{\texttt{Cross Site Request Forgery}: \url{http://es.wikipedia.org/wiki/Cross_Site_Request_Forgery}}, por lo que probablemente puede hacerse que un usuario sincronice un historial falso al visitar un sitio controlado por el atacante.
 
 \end{enumerate}
 
